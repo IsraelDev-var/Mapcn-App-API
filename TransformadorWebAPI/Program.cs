@@ -12,7 +12,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(
-        builder.Configuration.GetConnectionString("Default"),
+        builder.Configuration.GetConnectionString("Default")
+        ?? Environment.GetEnvironmentVariable("DATABASE_URL"),
         o => o.UseNetTopologySuite()
     )
 );
@@ -23,12 +24,11 @@ builder.Services
 // CORS para Next.js
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("NextJS", policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        policy
-            .WithOrigins("http://localhost:3000") // Next.js
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
     });
 });
 
@@ -55,7 +55,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("NextJS");
+app.UseCors("AllowAll");
 
 app.UseAuthorization();
 
