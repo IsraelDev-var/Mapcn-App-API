@@ -13,8 +13,8 @@ using TransformadorWebAPI.Data;
 namespace TransformadorWebAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260116152534_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260205063006_InitialCreate1")]
+    partial class InitialCreate1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,7 +27,7 @@ namespace TransformadorWebAPI.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "postgis");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Transformadores.Models.Transformador", b =>
+            modelBuilder.Entity("TransformadorWebAPI.Models.Transformador", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

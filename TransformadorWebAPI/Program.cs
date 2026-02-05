@@ -1,62 +1,66 @@
 using Microsoft.EntityFrameworkCore;
 using TransformadorWebAPI.Data;
-using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// =======================
-// SERVICES
-// =======================
+// Cadena de conexión:
+// - Local: appsettings.json
+// - Producción (Railway): variable de entorno
+// 1. Obtener cadena de conexión
+var connectionString =
+    builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? builder.Configuration["DATABASE_PUBLIC_URL"]
+    ?? builder.Configuration["DATABASE_URL"];
 
-builder.Services.AddControllers();
+connectionString = connectionString.Trim();
+if (connectionString.StartsWith("postgresql://"))
+{
+    var uri = new Uri(connectionString);
+    var userInfo = uri.UserInfo.Split(':');
 
+    connectionString =
+        $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.Trim('/')};" +
+        $"Username={userInfo[0]};Password={userInfo[1]};Ssl Mode=Require;Trust Server Certificate=true";
+}
+
+
+// Si no existe (por ejemplo en Railway Preview)
+if (string.IsNullOrEmpty(connectionString))
+{
+    connectionString =
+        "Host=centerbeam.proxy.rlwy.net;Port=37138;Database=railway;Username=postgres;Password=lLIJbocPEGOKTkrhFnDHasnVcKnWLjrH";
+}
+
+// DbContext con PostGIS
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("ConnectionStrings__Default")
-        ?? Environment.GetEnvironmentVariable("DATABASE_URL"),
-        o => o.UseNetTopologySuite()
-    )
+    options.UseNpgsql(connectionString,
+        o => o.UseNetTopologySuite())
 );
-builder.Services
-    .AddControllers()
+
+builder.Services.AddControllers()
     .AddNewtonsoftJson();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // CORS para Next.js
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
-    {
         policy.AllowAnyOrigin()
               .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
+              .AllowAnyMethod());
 });
 
-// OpenAPI
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
 var app = builder.Build();
-
-// =======================
-// PIPELINE
-// =======================
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Transformadores API v1");
-        c.RoutePrefix = "swagger";
-    });
+    app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
 app.UseCors("AllowAll");
-
 app.UseAuthorization();
 
 app.MapControllers();

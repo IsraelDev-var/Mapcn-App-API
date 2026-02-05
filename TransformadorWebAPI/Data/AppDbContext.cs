@@ -5,11 +5,14 @@ namespace TransformadorWebAPI.Data
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options)
-            : base(options)
-        {
-        }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        public DbSet<Transformador> Transformadores => Set<Transformador>();
+        public DbSet<Transformador> Transformadores { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // Esto asegura que las funciones de NetTopologySuite se activen en la DB
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

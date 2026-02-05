@@ -24,7 +24,7 @@ namespace TransformadorWebAPI.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "postgis");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Transformadores.Models.Transformador", b =>
+            modelBuilder.Entity("TransformadorWebAPI.Models.Transformador", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
